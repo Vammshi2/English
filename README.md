@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# English Learning AI
 
-## Getting Started
+A mobile-first web app that helps Telugu-speaking users improve English communication through AI-powered chat, stories, conversation practice, interview prep, and tech knowledge learning.
 
-First, run the development server:
+## Features
+
+- **AI Chat** -- Natural English conversation with a friendly teacher
+- **Story Mode** -- Learn through short stories + comprehension questions
+- **Practice Mode** -- Real-life conversation simulations (office, restaurant, etc.)
+- **Tech Knowledge** -- Learn C#, C++, .NET, Angular, SQL, Python, and 15+ more topics
+- **Interview Prep** -- Mock interview practice with feedback
+- **Communication** -- Email writing, formal English, professional phrases
+- **Telugu Support** -- "I don't understand" triggers Telugu explanations
+- **Voice** -- Speech-to-text input + text-to-speech output
+- **Error Correction** -- Visual highlighting of grammar mistakes
+- **Progress Tracking** -- Points, streaks, levels, and tech topic progress
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Edit `.env.local` with your actual keys:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### 3. Set up Supabase database
+
+Run the SQL in `supabase/migrations/001_initial_schema.sql` in your Supabase SQL Editor to create the required tables.
+
+### 4. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment (Vercel)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push code to GitHub
+2. Connect repo to [Vercel](https://vercel.com)
+3. Add environment variables in Vercel dashboard
+4. Deploy
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 16 (App Router)
+- Tailwind CSS
+- Supabase (PostgreSQL)
+- OpenAI API (gpt-4o-mini)
+- Web Speech API
