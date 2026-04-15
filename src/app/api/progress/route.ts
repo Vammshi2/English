@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
+
+const defaultProgress = {
+  words_learned: 0,
+  mistakes_corrected: 0,
+  streak_days: 0,
+  points: 0,
+  last_active: new Date().toISOString().split('T')[0],
+};
 
 export async function GET() {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json({ progress: defaultProgress, techProgress: [], totalWords: 0 });
+    }
+
     const { data: progress, error: progressError } = await supabase
       .from('progress')
       .select('*')
@@ -45,6 +58,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+
     const body = await req.json();
     const { action, data } = body;
 
