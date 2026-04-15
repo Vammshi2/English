@@ -88,7 +88,23 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: unknown) {
     console.error('Chat API error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    let message = 'Internal server error';
+    let status = 500;
+
+    if (error instanceof Error) {
+      message = error.message;
+      if (message.includes('insufficient_quota') || message.includes('exceeded your current quota')) {
+        message = 'OpenAI API quota exceeded. Please add billing at platform.openai.com or use a different API key.';
+        status = 402;
+      } else if (message.includes('does not have access to model')) {
+        message = 'Model access restricted. Please check your OpenAI project settings.';
+        status = 403;
+      } else if (message.includes('Incorrect API key')) {
+        message = 'Invalid OpenAI API key. Please check your .env.local file.';
+        status = 401;
+      }
+    }
+
+    return NextResponse.json({ error: message }, { status });
   }
 }

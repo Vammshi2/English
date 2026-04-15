@@ -11,8 +11,13 @@ interface Props {
 
 export default function ChatInput({ onSend, isLoading }: Props) {
   const [input, setInput] = useState('');
+  const [mounted, setMounted] = useState(false);
   const { isListening, transcript, isSupported, startListening, stopListening } = useSpeech();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (transcript) {
@@ -46,12 +51,14 @@ export default function ChatInput({ onSend, isLoading }: Props) {
       onSubmit={handleSubmit}
       className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2.5 flex items-end gap-2"
     >
-      <VoiceButton
-        isListening={isListening}
-        isSupported={isSupported}
-        onStart={startListening}
-        onStop={stopListening}
-      />
+      {mounted && (
+        <VoiceButton
+          isListening={isListening}
+          isSupported={isSupported}
+          onStart={startListening}
+          onStop={stopListening}
+        />
+      )}
       <div className="flex-1 relative">
         <textarea
           ref={inputRef}
