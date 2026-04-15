@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOpenAIClient } from '@/lib/openai';
+import { getGeminiClient } from '@/lib/gemini';
 import { getSystemPrompt } from '@/lib/prompts';
 import { ChatRequest, LearningMode } from '@/lib/types';
 
@@ -41,29 +41,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
     }
 
-    const openai = getOpenAIClient();
+    const genAI = getGeminiClient();
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const systemPrompt = getSystemPrompt(mode, techTopic, subTopic);
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages.map((m) => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        })),
-      ],
-      temperature: 0.7,
-      max_tokens: 1024,
-      stream: true,
+    const geminiHistory = messages.slice(0, -1).map((m) => ({
+      role: m.role === 'assistant' ? 'model' as const : 'user' as const,
+      parts: [{ text: m.content }],
+    }));
+
+    const lastMessage = messages[messages.length - 1];
+
+    const chat = model.startChat({
+      history: geminiHistory,
+      systemInstruction: { role: 'user' as const, parts: [{ text: systemPrompt }] },
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024,
+      },
     });
+
+    const result = await chat.sendMessageStream(lastMessage.content);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of completion) {
-            const text = chunk.choices[0]?.delta?.content || '';
+          for await (const chunk of result.stream) {
+            const text = chunk.text();
             if (text) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
@@ -93,15 +98,15 @@ export async function POST(req: NextRequest) {
 
     if (error instanceof Error) {
       message = error.message;
-      if (message.includes('insufficient_quota') || message.includes('exceeded your current quota')) {
-        message = 'OpenAI API quota exceeded. Please add billing at platform.openai.com or use a different API key.';
-        status = 402;
-      } else if (message.includes('does not have access to model')) {
-        message = 'Model access restricted. Please check your OpenAI project settings.';
-        status = 403;
-      } else if (message.includes('Incorrect API key')) {
-        message = 'Invalid OpenAI API key. Please check your .env.local file.';
+      if (message.includes('RESOURCE_EXHAUSTED') || message.includes('quota')) {
+        message = 'Gemini API quota exceeded. Please wait a minute or check your billing at ai.google.dev.';
+        status = 429;
+      } else if (message.includes('API_KEY_INVALID') || message.includes('API key not valid')) {
+        message = 'Invalid Gemini API key. Please check your .env.local file.';
         status = 401;
+      } else if (message.includes('PERMISSION_DENIED')) {
+        message = 'Gemini API access denied. Please check your API key permissions.';
+        status = 403;
       }
     }
 
